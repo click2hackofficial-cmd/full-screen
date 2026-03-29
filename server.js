@@ -1,44 +1,23 @@
-const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
-const path = require('path');
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server, {
-    cors: { origin: "*" }
-});
+const io = new Server(server);
 
-// Serve static files
 app.use(express.static(__dirname));
 
-// Serve index.html when someone visits /
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'panel.html'));
+io.on("connection", (socket) => {
+    console.log("User connected");
+
+    socket.on("panel_command", (data) => {
+        console.log("Command:", data);
+    });
+
+    socket.emit("devices_list", []);
 });
 
-// Socket connections
-io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
-    
-    // Send dummy devices list
-    socket.emit('devices_list', [
-        { deviceId: 'device_001', deviceName: 'OnePlus 11', battery: 87 },
-        { deviceId: 'device_002', deviceName: 'Samsung S23', battery: 62 }
-    ]);
-    
-    socket.on('panel_command', (data) => {
-        console.log('Command received:', data);
-        // Broadcast to all other clients (for testing)
-        socket.broadcast.emit('command_received', data);
-    });
-    
-    socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-    });
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(Server running on port ${PORT});
+server.listen(3000, () => {
+    console.log("Server running on port 3000");
 });
