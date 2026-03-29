@@ -12,19 +12,29 @@ const io = socketIO(server, {
 // Serve static files
 app.use(express.static(__dirname));
 
+// Serve index.html when someone visits /
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'panel.html'));
+});
+
 // Socket connections
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
     
-    // Send dummy devices list (actual me aap apne devices yahan se bhejenge)
+    // Send dummy devices list
     socket.emit('devices_list', [
         { deviceId: 'device_001', deviceName: 'OnePlus 11', battery: 87 },
         { deviceId: 'device_002', deviceName: 'Samsung S23', battery: 62 }
     ]);
     
     socket.on('panel_command', (data) => {
-        console.log('Command:', data);
-        // Yahan aap actual device control logic lagaenge
+        console.log('Command received:', data);
+        // Broadcast to all other clients (for testing)
+        socket.broadcast.emit('command_received', data);
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
     });
 });
 
