@@ -1,3 +1,4 @@
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -8,12 +9,13 @@ const io = new Server(server);
 
 app.use(express.static(__dirname));
 
+// 🔥 ye add karo
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/panel.html");
+});
+
 io.on("connection", (socket) => {
     console.log("User connected");
-
-    socket.on("panel_command", (data) => {
-        console.log("Command:", data);
-    });
 
     socket.emit("devices_list", []);
 });
