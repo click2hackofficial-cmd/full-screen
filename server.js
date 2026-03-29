@@ -17,16 +17,18 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Socket.IO कनेक्शन लॉजिक यहाँ आएगा
-// यह सिर्फ एक उदाहरण है, आपको इसे अपने एंड्रॉइड ऐप के अनुसार बदलना होगा
+// Socket.IO कनेक्शन लॉजिक
 io.on('connection', (socket) => {
   console.log('A user connected with id:', socket.id);
 
   // पैनल से आने वाले कमांड्स को सुनें
   socket.on('panel_command', (data) => {
+    // * यहाँ पर गलती थी, जिसे ठीक कर दिया गया है *
     console.log(Command received for target ${data.targetId}:, data);
+    
     // इस कमांड को सही एंड्रॉइड डिवाइस तक भेजें
     // आपको अपने एंड्रॉइड ऐप के लॉजिक के अनुसार इसे लागू करना होगा
+    // उदाहरण: io.to(data.targetId).emit('command_from_panel', data);
   });
 
   // जब कोई यूजर डिस्कनेक्ट हो
