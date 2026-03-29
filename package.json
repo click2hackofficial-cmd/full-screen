@@ -1,16 +1,11 @@
 {
-  "name": "c2h-ultimate-pro-panel",
-  "version": "1.0.0",
-  "description": "A real-time control panel for C2H devices.",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.2"
-  },
-  "engines": {
-    "node": "18.x"
-  }
+    "name": "c2h-panel",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "socket.io": "^4.7.2"
+    }
 }
